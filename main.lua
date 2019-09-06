@@ -6,6 +6,7 @@ function love.conf(t)
 end
 
 function love.load()
+	debugmode = false
 	love.window.setMode(1000,1000)
 	w, h = love.graphics.getDimensions()
 	flag = false
@@ -44,7 +45,7 @@ end
 function love.update(dt)
 	-- middlex = x
 	-- middley = y
-	player.move()
+	player.move(dt)
 	aux = aux + vel * 0.01
 	if aux > 50 then
 		vel = -vel
@@ -97,12 +98,17 @@ function love.draw(dt)
 		love.graphics.setColor(1,0, 0)
 		love.graphics.circle("fill", playerBundle[i].x,playerBundle[i].y, playerBundle[i].size)
 		love.graphics.reset()
+		love.graphics.print(playerBundle[i].size, playerBundle[i].x, playerBundle[i].y)
 	end
 	for i,j in pairs(enemies) do
 		love.graphics.setColor(0,0, 1,0.3)
+		if debugmode then
 		love.graphics.line(j.originx,j.originy,j.destx,j.desty)
+		end
 		love.graphics.setColor(j.r,j.g, j.b)
 		love.graphics.circle("fill", j.x,j.y,j.size)
+		love.graphics.setColor(1,1,1)
+		love.graphics.print(j.size, j.x, j.y)
 		-- love.graphics.line(j.originx, j.originy, w,0)
 		-- love.graphics.line(j.originx, j.originy, w,h)
 		
@@ -120,10 +126,10 @@ function addEnemie(e)
 	table.insert(enemies,e)
 end
 
-function player.move()
+function player.move(dt)
 
 
-	local speed  = 10
+	local speed  = 200
 	local keys = 0
 	if love.keyboard.isDown('up') then
 		keys = keys+1
@@ -139,20 +145,20 @@ function player.move()
 	end
 
 	if love.keyboard.isDown('up') then
-		playerBundle['player'].y = playerBundle['player'].y - (speed/keys)
+		playerBundle['player'].y = playerBundle['player'].y - (speed/keys)*dt
 	end
 	if love.keyboard.isDown('down') then
-		playerBundle['player'].y = playerBundle['player'].y + (speed/keys)
+		playerBundle['player'].y = playerBundle['player'].y + (speed/keys)*dt
 
 	end
 	if love.keyboard.isDown('left') then
-		playerBundle['player'].x = playerBundle['player'].x - (speed/keys)
-		x =x - (speed/keys)
+		playerBundle['player'].x = playerBundle['player'].x - (speed/keys)*dt
+		x =x - (speed/keys)*dt
 	end
 
 	if love.keyboard.isDown('right') then
-		playerBundle['player'].x = playerBundle['player'].x + (speed/keys)
-		x = x + (speed/keys)
+		playerBundle['player'].x = playerBundle['player'].x + (speed/keys)*dt
+		x = x + (speed/keys)*dt
 	end
 
 	if playerBundle['player'].x < 0 then 
@@ -237,7 +243,7 @@ function getAnguloCoe(angle)
 end
 
 function colide(x1,y1,r1,x2,y2,r2)
-	if(math.sqrt(math.pow(x1-x2,2)+math.pow(y1-y2,2)) < r1+r2) then
+	if(math.sqrt(math.pow(x1-x2,2)+math.pow(y1-y2,2)) < (r1+r2)*0.75) then
 		return true
 	else
 		return false
@@ -250,12 +256,12 @@ function checkEat(player,enemie)
 	if(colide(player.x,player.y,player.size,enemie.x,enemie.y,enemie.size) and player.size < enemie.size )  then
 		return 'gameover'
 		elseif(colide(player.x,player.y,player.size,enemie.x,enemie.y,enemie.size) and player.size >= enemie.size)then
-			player.size = player.size+1
+			--player.size = player.size + enemie.size*0.1
+			player.size = player.size + (player.size-enemie.size)*0.1
 			return true
 		end
 
 	end
-
 
 
 	function player.create(name,size)
